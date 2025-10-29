@@ -1363,12 +1363,15 @@ check_if_mtu(struct gatekeeper_if *iface,
 	/*
 	 * Set up device MTU.
 	 *
-	 * If greater than the size of the mbufs, then add the
-	 * multi-segment buffer flag.
+	 * DO NOT add RTE_ETH_TX_OFFLOAD_MULTI_SEGS to
+	 * port_conf->txmode.offloads because all mbufs in Gatekeeper are
+	 * single segment and RTE_ETH_TX_OFFLOAD_MULTI_SEGS may disable
+	 * vectorial transmission; see ice_set_tx_function() in the ICE driver
+	 * for an example.
+	 *
+	 * If more dataroom in mbufs is needed, review create_pktmbuf_pool().
 	 */
 	port_conf->rxmode.mtu = iface->mtu;
-	if (iface->mtu > RTE_MBUF_DEFAULT_BUF_SIZE)
-		port_conf->txmode.offloads |= RTE_ETH_TX_OFFLOAD_MULTI_SEGS;
 
 	if (unlikely(dev_info->min_mtu > port_conf->rxmode.mtu)) {
 		G_LOG(ERR, "%s(%s): the minimum MTU %u is larger than the configured MTU %"PRIu32"\n",
@@ -1382,15 +1385,6 @@ check_if_mtu(struct gatekeeper_if *iface,
 			__func__, iface->name,
 			dev_info->max_mtu, port_conf->rxmode.mtu);
 		return -EINVAL;
-	}
-
-	if (unlikely((port_conf->txmode.offloads &
-				RTE_ETH_TX_OFFLOAD_MULTI_SEGS) &&
-			!(dev_info->tx_offload_capa &
-			RTE_ETH_TX_OFFLOAD_MULTI_SEGS))) {
-		G_LOG(NOTICE, "%s(%s): interface does not support offloading multi-segment TX buffers\n",
-			__func__, iface->name);
-		port_conf->txmode.offloads &= ~RTE_ETH_TX_OFFLOAD_MULTI_SEGS;
 	}
 
 	return 0;

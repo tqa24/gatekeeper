@@ -26,6 +26,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <net/if.h>
+#include <linux/virtio_net.h> /* For sizeof(struct virtio_net_hdr_mrg_rxbuf) */
 
 #include <rte_mbuf.h>
 #include <rte_thash.h>
@@ -2378,9 +2379,49 @@ calculate_mempool_config_para(const char *block_name,
 	return num_mbuf;
 }
 
+#define LINK_LAYER_HEADROOM (32)
+
+/*
+ * Computes the dataroom size needed for struct mbuf's to be used at front,
+ * back, and KNI interfaces.
+ */
+static uint16_t
+dataroom_from_net(const struct net_config *net)
+{
+	uint16_t max_mtu = net->front.mtu;
+	if (net->back_iface_enabled && net->back.mtu > max_mtu)
+		max_mtu = net->back.mtu;
+
+	/*
+	 * Even Ethernet NICs do not agree on the exact headroom for
+	 * the link layer, so the test below favors Virtio (i.e., KNI
+	 * interfaces) because it is the most demaing part.
+	 * See virtio_ethdev.c:virtio_mtu_set() for details.
+	 */
+	RTE_BUILD_BUG_ON(LINK_LAYER_HEADROOM < (
+			RTE_ETHER_HDR_LEN	+ /* Ethernet */
+			RTE_VLAN_HLEN		+ /* VLAN */
+			sizeof(struct virtio_net_hdr_mrg_rxbuf) /* Virtio */
+		)
+	);
+
+	/*
+	 * Having RTE_MBUF_DEFAULT_BUF_SIZE in the RTE_MAX() below
+	 * guarantees the minimum size that some NICs require to avoid
+	 * splitting frames into multiple segments.
+	 *
+	 * In the second expression:
+	 *   @RTE_PKTMBUF_HEADROOM is required by DPDK libraries.
+	 *   @LINK_LAYER_HEADROOM accounts for link layers headers.
+	 *   @max_mtu makes the expression valid for front and back interfaces.
+	 */
+	return RTE_MAX(RTE_MBUF_DEFAULT_BUF_SIZE,
+		RTE_PKTMBUF_HEADROOM + LINK_LAYER_HEADROOM + max_mtu);
+}
+
 struct rte_mempool *
 create_pktmbuf_pool(const char *block_name, unsigned int lcore,
-	unsigned int num_mbuf)
+	unsigned int num_mbuf, const struct net_config *net)
 {
 	struct rte_mempool *mp;
 	char pool_name[64];
@@ -2388,7 +2429,7 @@ create_pktmbuf_pool(const char *block_name, unsigned int lcore,
 		block_name, lcore);
 	RTE_VERIFY(ret > 0 && ret < (int)sizeof(pool_name));
 	mp = rte_pktmbuf_pool_create_by_ops(pool_name, num_mbuf, 0,
-		sizeof(struct sol_mbuf_priv), RTE_MBUF_DEFAULT_BUF_SIZE,
+		sizeof(struct sol_mbuf_priv), dataroom_from_net(net),
 		rte_lcore_to_socket_id(lcore), "ring_mp_sc");
 	if (mp == NULL) {
 		G_LOG(ERR,

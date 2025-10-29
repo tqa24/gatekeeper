@@ -836,7 +836,7 @@ assign_lls_queue_ids(struct lls_config *lls_conf)
 	num_mbuf = calculate_mempool_config_para("lls",
 		lls_conf->net, total_pkt_burst);
 	lls_conf->mp = create_pktmbuf_pool("lls",
-		lls_conf->lcore_id, num_mbuf);
+		lls_conf->lcore_id, num_mbuf, lls_conf->net);
 	if (lls_conf->mp == NULL) {
 		ret = -1;
 		goto fail;

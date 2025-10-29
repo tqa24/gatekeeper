@@ -808,7 +808,7 @@ assign_cps_queue_ids(struct cps_config *cps_conf)
 	num_mbuf = calculate_mempool_config_para("cps",
 		cps_conf->net, total_pkt_burst);
 	cps_conf->mp = create_pktmbuf_pool("cps",
-		cps_conf->lcore_id, num_mbuf);
+		cps_conf->lcore_id, num_mbuf, cps_conf->net);
 	if (cps_conf->mp == NULL) {
 		ret = -1;
 		goto fail;

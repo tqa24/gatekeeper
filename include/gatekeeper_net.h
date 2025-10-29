@@ -609,7 +609,8 @@ bool ipv6_configured(struct net_config *net_conf);
 unsigned int calculate_mempool_config_para(const char *block_name,
 	struct net_config *net_conf, unsigned int total_pkt_burst);
 struct rte_mempool *create_pktmbuf_pool(const char *block_name,
-	unsigned int lcore, unsigned int num_mbuf);
+	unsigned int lcore, unsigned int num_mbuf,
+	const struct net_config *net);
 
 /*
  * No cleanup for this step, since DPDK

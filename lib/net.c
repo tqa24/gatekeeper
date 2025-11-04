@@ -1373,6 +1373,12 @@ check_if_mtu(struct gatekeeper_if *iface,
 	 */
 	port_conf->rxmode.mtu = iface->mtu;
 
+	if (iface->pmd_mtu_workaround) {
+		port_conf->rxmode.mtu += RTE_ETHER_HDR_LEN; /* Ethernet */
+		if (iface->vlan_insert)
+			port_conf->rxmode.mtu += RTE_VLAN_HLEN; /* VLAN */
+	}
+
 	if (unlikely(dev_info->min_mtu > port_conf->rxmode.mtu)) {
 		G_LOG(ERR, "%s(%s): the minimum MTU %u is larger than the configured MTU %"PRIu32"\n",
 			__func__, iface->name,

@@ -283,6 +283,7 @@ struct gatekeeper_if {
 	bool     ipv4_hw_udp_cksum;
 	bool     ipv6_hw_udp_cksum;
 	bool     ipv4_hw_cksum;
+	bool	 pmd_mtu_workaround;
 	bool     guarantee_random_entropy;
 	bool     alternative_rss_hash;
 	/* This struct has hidden fields. */

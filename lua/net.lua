@@ -46,6 +46,8 @@ return function (gatekeeper_server)
 	local back_ipv6_hw_udp_cksum = true
 	local front_ipv4_hw_cksum = true
 	local back_ipv4_hw_cksum = true
+	local front_pmd_mtu_workaround = false
+	local back_pmd_mtu_workaround = false
 	local front_alternative_rss_hash = false
 	local back_alternative_rss_hash = false
 
@@ -75,6 +77,7 @@ return function (gatekeeper_server)
 	front_iface.ipv4_hw_udp_cksum = front_ipv4_hw_udp_cksum
 	front_iface.ipv6_hw_udp_cksum = front_ipv6_hw_udp_cksum
 	front_iface.ipv4_hw_cksum = front_ipv4_hw_cksum
+	front_iface.pmd_mtu_workaround = front_pmd_mtu_workaround
 	front_iface.guarantee_random_entropy = guarantee_random_entropy
 	front_iface.alternative_rss_hash = front_alternative_rss_hash
 	local ret = staticlib.init_iface(front_iface, "front",
@@ -99,6 +102,7 @@ return function (gatekeeper_server)
 		back_iface.ipv4_hw_udp_cksum = back_ipv4_hw_udp_cksum
 		back_iface.ipv6_hw_udp_cksum = back_ipv6_hw_udp_cksum
 		back_iface.ipv4_hw_cksum = back_ipv4_hw_cksum
+		back_iface.pmd_mtu_workaround = back_pmd_mtu_workaround
 		back_iface.guarantee_random_entropy = guarantee_random_entropy
 		back_iface.alternative_rss_hash = back_alternative_rss_hash
 		ret = staticlib.init_iface(back_iface, "back",

@@ -2075,7 +2075,8 @@ init_gt_instances(struct gt_config *gt_conf)
 		unsigned int lcore = gt_conf->lcores[i];
 		inst_ptr = &gt_conf->instances[i];
 
-		inst_ptr->mp = create_pktmbuf_pool("gt", lcore, num_mbuf);
+		inst_ptr->mp = create_pktmbuf_pool("gt", lcore, num_mbuf,
+			gt_conf->net);
 		if (inst_ptr->mp == NULL) {
 			ret = -1;
 			goto free_gt_instance;

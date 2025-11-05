@@ -44,10 +44,15 @@ static int
 setup_dpdk_interface(struct cps_kni *kni, const struct gatekeeper_if *iface,
 	struct rte_mempool *mp, uint16_t queue_size)
 {
+	/*
+	 * DO NOT add RTE_ETH_RX_OFFLOAD_SCATTER to port_conf.rxmode.offloads
+	 * to guarantee that all mbufs have a single segment.
+	 *
+	 * If more dataroom in mbufs is needed, review create_pktmbuf_pool().
+	 */
 	struct rte_eth_conf port_conf = {
 		.rxmode = {
 			.mtu = iface->mtu,
-			.offloads = RTE_ETH_RX_OFFLOAD_SCATTER,
 		},
 	};
 

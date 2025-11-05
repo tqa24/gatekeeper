@@ -2550,7 +2550,8 @@ gk_stage1(void *arg)
 		unsigned int lcore = gk_conf->lcores[i];
 		struct gk_instance *inst_ptr = &gk_conf->instances[i];
 
-		inst_ptr->mp = create_pktmbuf_pool("gk", lcore, num_mbuf);
+		inst_ptr->mp = create_pktmbuf_pool("gk", lcore, num_mbuf,
+			gk_conf->net);
 		if (inst_ptr->mp == NULL)
 			goto cleanup;
 

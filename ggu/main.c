@@ -633,7 +633,7 @@ ggu_stage1(void *arg)
 			ggu_conf->net, ggu_conf->total_pkt_burst);
 
 		ggu_conf->mp = create_pktmbuf_pool("ggu",
-			ggu_conf->lcore_id, num_mbuf);
+			ggu_conf->lcore_id, num_mbuf, ggu_conf->net);
 		if (ggu_conf->mp == NULL)
 			return -1;
 

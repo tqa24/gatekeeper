@@ -242,6 +242,16 @@ struct gatekeeper_if {
 	bool		ipv4_hw_cksum;
 
 	/*
+	 * XXX #730 Due to a bug in some Poll Mode Drivers (PMD),
+	 * the MTU parameter passed during the initialization must include
+	 * length of the link layer header(s).
+	 *
+	 * The ICE drivers is known to require this workaround.
+	 * See check_if_mtu() for mare information.
+	 */
+	bool		pmd_mtu_workaround;
+
+	/*
 	 * This field decides if the flag GRND_RANDOM is passed to getradom(2)
 	 * while initializing field @rss_key.
 	 */
@@ -609,7 +619,8 @@ bool ipv6_configured(struct net_config *net_conf);
 unsigned int calculate_mempool_config_para(const char *block_name,
 	struct net_config *net_conf, unsigned int total_pkt_burst);
 struct rte_mempool *create_pktmbuf_pool(const char *block_name,
-	unsigned int lcore, unsigned int num_mbuf);
+	unsigned int lcore, unsigned int num_mbuf,
+	const struct net_config *net);
 
 /*
  * No cleanup for this step, since DPDK
